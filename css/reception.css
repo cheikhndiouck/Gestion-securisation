@@ -1,0 +1,89 @@
+body {
+  background-image: url("../image/banniere.png");
+  background-attachment: fixed;
+  background-size: auto;
+}
+
+
+header {
+  display: flex;
+  justify-content: center;
+  background-color: #0d179c;
+  padding: 10px 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+  color: rgb(0, 18, 119);
+  font-family: "Times New Roman", Times, serif;
+}
+
+.dropdown-item {
+  border-radius: 8px;
+  padding: 10px 15px;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Effet hover */
+.dropdown-item:hover {
+  background-color: #ee7300;
+  color: #e6e2e2; 
+  transform: translateX(4px); /* petit effet décalage */
+}
+
+.dropdown-menu {
+  border-radius: 12px; /* coins arrondis */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* ombre légère */
+  padding: 8px;
+  border: none;
+}
+
+.conteneur {
+  max-width: 900px; /* largeur maximale */
+  margin: 20px auto;
+  background-color: rgb(2, 54, 122);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgb(218, 81, 2);
+  line-height: 1.7;
+  color: #333;
+}
+
+h1 {
+  color: #0d179c;
+  text-decoration: underline;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+th,
+td {
+  border: 1px solid #ee7300;
+  padding: 8px;
+  text-align: left;
+}
+th {
+  background: #032597;
+}
+.btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #2980b9;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+.error {
+  color: red;
+  margin-top: 10px;
+}

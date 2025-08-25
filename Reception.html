@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saisie de la Réception</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/reception.css" />
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+    <header>
+      <div class="d-flex position-relative p-2">
+        <img
+          src="image/logo.jpg"
+          class="img-fluid"
+          alt="logo"
+          style="max-width: 70px"
+        />
+      </div>
+      <nav
+        class="navbar navbar-expand-lg navbar-light shadow"
+        style="background-color: #7ffff4; 
+        border-radius: 50px 150px;
+        box-shadow: 0 4px 8px #df6604;"
+      >
+        <div class="container">
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div
+            class="collapse navbar-collapse justify-content-between"
+            id="navbarNav"
+          >
+            <ul class="navbar-nav">
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                >
+                  BONS DE SORTIES
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="dropdown-item" href="Materiel.php">Matériels</a>
+                  </li>
+                  <li><a class="dropdown-item" href="#">Responsable</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                >
+                  RECEPTION
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="Materiel.php">Materiel</a></li>
+                  <li><a class="dropdown-item" href="#">FACTURE</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                >
+                  FACTURATION
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#">Compteur</a></li>
+                </ul>
+              </li>
+            </ul>
+
+            <!-- Recherche -->
+            <form class="d-flex ms-auto">
+              <input
+                class="form-control me-2"
+                type="search"
+                placeholder="Rechercher..."
+              />
+              <button class="btn btn-outline-primary">Rechercher</button>
+            </form>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- FORMULAIRE -->
+    <main class="container my-4">
+      <h1 class="text-center mb-4">Saisie de la Réception des Travaux</h1>
+
+<div class="conteneur">
+      <form id="receptionForm" class="card p-4 shadow rounded" method="post">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="gie" class="form-label">Nom du GIE</label>
+            <input
+              type="text"
+              id="gie"
+              name="gie"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="dateReception" class="form-label"
+              >Date de réception</label
+            >
+            <input
+              type="date"
+              id="dateReception"
+              name="dateReception"
+              class="form-control"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Matériel réceptionné -->
+        <div class="mb-3">
+          <label class="form-label">Matériel réceptionné</label>
+          <table id="materielTable" class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Nom du matériel</th>
+                <th>Quantité sur place</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <input
+                    type="text"
+                    name="materiel[]"
+                    class="form-control"
+                    required
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    name="quantite[]"
+                    class="form-control"
+                    min="1"
+                    required
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    onclick="removeMaterielRow(this)"
+                  >
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button
+            type="button"
+            class="btn btn-success"
+            onclick="addMaterielRow()"
+          >
+            + Ajouter un matériel
+          </button>
+        </div>
+
+        <!-- Compteurs -->
+        <div class="mb-3">
+          <label for="compteurs" class="form-label"
+            >Numéros de compteurs ou avis de services concernés</label
+          >
+          <textarea
+            id="compteurs"
+            name="compteurs"
+            rows="2"
+            class="form-control"
+            placeholder="Un numéro par ligne"
+            required
+          ></textarea>
+        </div>
+
+        <div id="errorMsg" class="text-danger fw-bold mb-3"></div>
+
+        <!-- Bouton validation -->
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary px-5">
+            Valider la réception
+          </button>
+        </div>
+      </form>
+</div>
+    </main>
+
+    <footer class="text-center py-3"></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./js/reception.js"></script>
+  </body>
+</html>

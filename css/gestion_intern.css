@@ -1,0 +1,51 @@
+body {
+  background-image: url("../image/banniere.png");
+  background-attachment: fixed;
+  background-size: auto;
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  background-color: #0d179c;
+  padding: 10px 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+  color: rgb(0, 18, 119);
+  font-family: "Times New Roman", Times, serif;
+}
+
+/* Style général du dropdown */
+.dropdown-menu {
+  border-radius: 12px; /* coins arrondis */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* ombre légère */
+  padding: 8px;
+  border: none;
+}
+
+/* Style des items */
+.dropdown-item {
+  border-radius: 8px;
+  padding: 10px 15px;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Effet hover */
+.dropdown-item:hover {
+  background-color: #ee7300;
+  color: #e6e2e2;
+  transform: translateX(4px); /* petit effet décalage */
+}
+
+.conteneur {
+  max-width: 900px;
+  margin: 20px auto;
+  background-color: rgb(2, 54, 122);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgb(218, 81, 2);
+  line-height: 1.7;
+  color: #333;
+}
