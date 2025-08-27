@@ -1,119 +1,77 @@
-// ce script gère l'affichage et la soumission du formulaire pour la gestion des matériels
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("materielForm");
+  const materielsTableau = document.getElementById("materielsTableau");
+  const listeMateriels = document.getElementById("ListeMateriels");
+  const enregistrerDiv = document.getElementById("enregistrerDiv");
+  const enregistrerBtn = document.getElementById("enregistrerBtn");
 
-document
-  .getElementById("materielForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault(); // empêche le rechargement de la page
+  // Chargement des matériels depuis la base au submit du formulaire
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-    fetch("Materiel.php")
+    fetch("./php/Materiel.php")
       .then((response) => response.json())
       .then((data) => {
-        const tbody = document.getElementById("listeMateriels");
-        tbody.innerHTML = ""; // vider le tableau avant de remplir
-
-        data.forEach((item) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-                  <td>${item.nom}</td>
-                  <td><input type="number" min="0" placeholder="Entrer quantité"></td>
-                  <td>${item.unite}</td>
-              `;
-          tbody.appendChild(tr);
+        listeMateriels.innerHTML = "";
+        data.forEach((item, idx) => {
+          listeMateriels.innerHTML += `
+            <tr>
+              <td>${idx + 1}</td>
+              <td>${item.nom}</td>
+              <td>
+                <input type="number" min="0" value="0" class="form-control quantite-input" data-nom="${
+                  item.nom
+                }" data-unite="${item.unite}">
+              </td>
+              <td>${item.unite}</td>
+            </tr>
+          `;
         });
+        materielsTableau.style.display = "block";
+        enregistrerDiv.style.display = "block";
 
-        // afficher le tableau
-        document.getElementById("materielsTableau").style.display = "block";
+        // Ferme la modal et réinitialise le formulaire APRÈS affichage du tableau
+        const modal = document.getElementById("formModal");
+        if (modal) {
+          const modalInstance =
+            bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
+          modalInstance.hide();
+        }
+        form.reset();
       })
-      .catch((err) => console.error("Erreur fetch:", err));
+      .catch((error) => {
+        ListeMateriels.innerHTML = `<tr><td colspan="4">Erreur de chargement des matériels</td></tr>`;
+        materielsTableau.style.display = "block";
+      });
   });
 
-
-//   ce script gère l'enregistrement des données saisies dans le tableau
-document
-  .getElementById("enregistrerBtn")
-  .addEventListener("click", function () {
-    const rows = document.querySelectorAll("#listeMateriels tr");
+  // Enregistrement de l'inventaire
+  enregistrerBtn.addEventListener("click", function () {
+    const inputs = document.querySelectorAll(".quantite-input");
     const inventaire = [];
-
-    rows.forEach((row) => {
-      const nom = row.cells[0].innerText;
-      const quantite = row.cells[1].querySelector("input").value;
-      const unite = row.cells[2].innerText;
-
-      if (quantite !== "") {
-        inventaire.push({ nom, quantite, unite });
-      }
+    inputs.forEach((input) => {
+      inventaire.push({
+        nom: input.getAttribute("data-nom"),
+        quantite: input.value,
+        unite: input.getAttribute("data-unite"),
+      });
     });
 
-    // Envoi via POST au PHP
-    fetch("enregistrer.php", {
+    fetch("./php/Enregistrer.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(inventaire),
     })
       .then((response) => response.json())
-      .then((data) => {
-        alert(data.message);
+      .then((result) => {
+        alert(result.message);
+        // Optionnel : vider la table après enregistrement
+        // listeMateriels.innerHTML = '';
+        // materielsTableau.style.display = 'none';
+        // enregistrerDiv.style.display = 'none';
       })
-      .catch((err) => console.error("Erreur:", err));
+      .catch((error) => {
+        alert("Erreur lors de l’enregistrement");
+      });
   });
-
-// ce script gère l'affichage du formulaire et la soumission pour la gestion des matériels
-document
-  .getElementById("materielForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    fetch("Materiel.php")
-      .then((response) => response.json())
-      .then((data) => {
-        const tbody = document.getElementById("listeMateriels");
-        tbody.innerHTML = "";
-
-        data.forEach((item) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-                  <td>${item.nom}</td>
-                  <td><input type="number" min="0" placeholder="Entrer quantité"></td>
-                  <td>${item.unite}</td>
-              `;
-          tbody.appendChild(tr);
-        });
-
-        // afficher le tableau
-        document.getElementById("materielsTableau").style.display = "block";
-
-        // afficher le bouton Enregistrer
-        document.getElementById("enregistrerDiv").style.display = "block";
-      })
-      .catch((err) => console.error("Erreur fetch:", err));
-  });
-
-// ce script gère l'enregistrement des données saisies dans le tableau
-document
-  .getElementById("enregistrerBtn")
-  .addEventListener("click", function () {
-    const rows = document.querySelectorAll("#listeMateriels tr");
-    const inventaire = [];
-
-    rows.forEach((row) => {
-      const nom = row.cells[0].innerText;
-      const quantite = row.cells[1].querySelector("input").value;
-      const unite = row.cells[2].innerText;
-
-      if (quantite !== "") {
-        inventaire.push({ nom, quantite, unite });
-      }
-    });
-
-    fetch("enregistrer.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(inventaireS),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        alert(data.message);
-      })
-      .catch((err) => console.error("Erreur:", err));
-  });
+});
