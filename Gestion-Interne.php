@@ -6,8 +6,7 @@
     <title>Bons de sortie</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+      rel="stylesheet"/>
     <link rel="stylesheet" href="./css/global.css" />
     <link rel="stylesheet" href="./css/gestion_intern.css" />
   </head>
@@ -136,7 +135,7 @@
         </div>
       </div>
     </main>
-
+</div>
     <!-- Tableau des matériels -->
 
     <div id="materielsTableau" class="mt-4" style="display: none">

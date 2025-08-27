@@ -3,7 +3,7 @@ echo '
     <header>
       <div class="d-flex position-relative p-2">
         <img
-          src="image/banniere.png"
+          src="./image/banniere.png"
           class="img-fluid"
           alt="logo"
           style="max-width: 70px"
@@ -38,13 +38,14 @@ echo '
                   role="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
+                  href="./php/Gestion-Interne.php"
                 >
                   BONS DE SORTIES
                 </a>
 
                 <ul class="dropdown-menu">
                   <li>
-                    <a class="dropdown-item" href="Materiel.php">Matériels</a>
+                    <a class="dropdown-item" href="./php/liste_materiel.php">Matériels</a>
                   </li>
                   <li><a class="dropdown-item" href="#">Responsable</a></li>
                 </ul>
@@ -59,6 +60,7 @@ echo '
                   role="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
+                  href="./php/Reception.php"
                 >
                   RECEPTION
                 </a>
@@ -102,4 +104,5 @@ echo '
         </div>
       </nav>
     </header>
-';
+    '
+?>;
