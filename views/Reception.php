@@ -146,6 +146,75 @@ require_once '../php/lst_materiel.php'; // Pour accéder à la liste des matéri
           </div>
 
         </form>
+
+        <?php
+        try {
+          // Connexion à la BDD
+          $pdo = new PDO("mysql:host=localhost;dbname=gestion-database;charset=utf8", "root", "");
+          $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+          // Requête pour récupérer les dernières réceptions
+          $sql = "
+    SELECT fr.numero_fiche, 
+           m.nom AS materiel, 
+           mr.qte_constatee, 
+           m.unite,
+           rc.numero_compteur
+    FROM fiche_reception fr
+    LEFT JOIN materiels_reception mr 
+        ON fr.id = mr.fiche_reception_id
+    LEFT JOIN materiel m 
+        ON mr.materiel_id = m.id
+    LEFT JOIN receptions_compteurs rc
+        ON fr.id = rc.fiche_reception_id
+    ORDER BY fr.id DESC
+    LIMIT 10
+";
+          $stmt = $pdo->query($sql);
+          $receptions = $stmt->fetchAll();
+        } catch (PDOException $e) {
+          echo "<div class='alert alert-danger'>Erreur : " . $e->getMessage() . "</div>";
+        }
+        ?>
+
+        <!-- Tableau récapitulatif -->
+        <hr class="my-4">
+
+        <h3 class="mb-3">📋 Dernières Réceptions</h3>
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>Numéro de Fiche</th>
+                <th>Matériel</th>
+                <th>Quantité</th>
+                <th>Unité</th>
+                <th>Numéro Compteur</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php if (!empty($receptions)): ?>
+                <?php foreach ($receptions as $r): ?>
+                  <tr>
+                    <td><?= htmlspecialchars($r['numero_fiche']) ?></td>
+                    <td><?= htmlspecialchars($r['materiel'] ?? '—') ?></td>
+                    <td><?= htmlspecialchars($r['qte_constatee'] ?? '0') ?></td>
+                    <td><?= htmlspecialchars($r['unite'] ?? '-') ?></td>
+                    <td><?= htmlspecialchars($r['numero_compteur'] ?? '-') ?></td>
+                  </tr>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <tr>
+                  <td colspan="5" class="text-center">Aucune réception enregistrée</td>
+                </tr>
+              <?php endif; ?>
+            </tbody>
+
+          </table>
+        </div>
+
+
+
         <!-- Zone messages Bootstrap -->
         <div id="errorMsg" class="mb-3"></div>
         <div id="successMsg" class="mb-3"></div>
