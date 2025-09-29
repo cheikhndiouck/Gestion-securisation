@@ -1,0 +1,24 @@
+
+/* Fond général de la page login */
+.bg-login {
+    background-image: url('../image/fond.png');
+    background-size: cover;
+    background-position: center;
+}
+
+/* Encadré principal */
+.login-box {
+    background-color: rgb(0, 56, 140);
+}
+
+/* Logo à gauche */
+.login-logo {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.login-logo > img {
+    object-fit: contain;
+    width: 100%;
+}

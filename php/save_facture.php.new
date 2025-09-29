@@ -1,0 +1,188 @@
+<?php
+session_start();
+require_once 'BD connexion/connexion.php';
+
+// Activation du mode debug
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+header('Content-Type: application/json');
+
+// Fonction pour renvoyer une réponse JSON
+function sendJsonResponse($success, $message, $data = null) {
+    echo json_encode([
+        'success' => $success,
+        'message' => $message,
+        'data' => $data
+    ]);
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    sendJsonResponse(false, "Méthode non autorisée");
+}
+
+try {
+    // 1. Validation des données reçues
+    $required = ['numero_facture', 'zone', 'date_facturation', 'matricule_agent', 'fiche_reception_ids'];
+    foreach ($required as $field) {
+        if (!isset($_POST[$field]) || empty($_POST[$field])) {
+            throw new Exception("Le champ '$field' est obligatoire.");
+        }
+    }
+
+    $numero_facture = trim($_POST['numero_facture']);
+    $zone = trim($_POST['zone']);
+    $date_facturation = trim($_POST['date_facturation']);
+    $matricule_agent = trim($_POST['matricule_agent']);
+    $fiche_ids = is_array($_POST['fiche_reception_ids']) ? $_POST['fiche_reception_ids'] : [$_POST['fiche_reception_ids']];
+
+    // 2. Validation du fichier si présent
+    $fichier_scan = null;
+    if (!empty($_FILES['fichier_scan']['name'])) {
+        $allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!in_array($_FILES['fichier_scan']['type'], $allowedTypes)) {
+            throw new Exception("Type de fichier non autorisé. Formats acceptés : PDF, JPG, PNG");
+        }
+
+        if ($_FILES['fichier_scan']['size'] > $maxSize) {
+            throw new Exception("Le fichier est trop volumineux. Taille maximale : 5MB");
+        }
+
+        $upload_dir = "../uploads/factures/";
+        if (!is_dir($upload_dir)) {
+            if (!mkdir($upload_dir, 0777, true)) {
+                throw new Exception("Impossible de créer le dossier des factures");
+            }
+        }
+
+        $fichier_nom = time() . "_" . preg_replace("/[^a-zA-Z0-9.]/", "_", $_FILES['fichier_scan']['name']);
+        $fichier_chemin = $upload_dir . $fichier_nom;
+
+        if (!move_uploaded_file($_FILES['fichier_scan']['tmp_name'], $fichier_chemin)) {
+            throw new Exception("Erreur lors de l'upload du fichier");
+        }
+
+        $fichier_scan = $fichier_nom;
+    }
+
+    // Début de la transaction
+    $pdo->beginTransaction();
+
+    // 3. Vérification des fiches et calcul du montant
+    $montant_total = 0;
+    $details = [];
+    $zone_coherence = null;
+
+    foreach ($fiche_ids as $fiche_id) {
+        // Vérifier si la fiche existe et n'est pas déjà facturée
+        $stmt = $pdo->prepare("
+            SELECT fr.zone, fr.id 
+            FROM fiche_reception fr 
+            LEFT JOIN facture_reception frf ON fr.id = frf.fiche_id 
+            WHERE fr.id = ? AND frf.fiche_id IS NULL
+        ");
+        $stmt->execute([$fiche_id]);
+        $fiche = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$fiche) {
+            throw new Exception("La fiche de réception #$fiche_id n'existe pas ou est déjà facturée");
+        }
+
+        // Vérifier la cohérence des zones
+        if ($zone_coherence === null) {
+            $zone_coherence = $fiche['zone'];
+        } elseif ($zone_coherence !== $fiche['zone']) {
+            throw new Exception("Toutes les fiches doivent être de la même zone");
+        }
+
+        // Récupérer et calculer les montants des matériels
+        $stmt = $pdo->prepare("
+            SELECT mr.materiel_id, mr.qte_constatee, m.nom, m.prix_unitaire 
+            FROM materiels_reception mr 
+            JOIN materiel m ON mr.materiel_id = m.id 
+            WHERE mr.fiche_reception_id = ?
+        ");
+        $stmt->execute([$fiche_id]);
+        $materiels = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($materiels as $mat) {
+            $quantite = floatval($mat['qte_constatee']);
+            $prix = floatval($mat['prix_unitaire']);
+            $montant = $quantite * $prix;
+            $montant_total += $montant;
+
+            $details[] = [
+                'materiel_id' => $mat['materiel_id'],
+                'quantite' => $quantite,
+                'prix_unitaire' => $prix,
+                'montant' => $montant
+            ];
+        }
+    }
+
+    // 4. Insertion de la facture
+    $stmt = $pdo->prepare("
+        INSERT INTO facture (
+            numero_facture, zone, date_facturation, 
+            matricule_agent, fichier_scan, montant_total
+        ) VALUES (?, ?, ?, ?, ?, ?)
+    ");
+    $stmt->execute([
+        $numero_facture, $zone, $date_facturation,
+        $matricule_agent, $fichier_scan, $montant_total
+    ]);
+    $facture_id = $pdo->lastInsertId();
+
+    // 5. Liaison avec les fiches de réception
+    $stmt = $pdo->prepare("
+        INSERT INTO facture_reception (facture_id, fiche_id) 
+        VALUES (?, ?)
+    ");
+    foreach ($fiche_ids as $fiche_id) {
+        $stmt->execute([$facture_id, $fiche_id]);
+    }
+
+    // 6. Insertion des détails
+    $stmt = $pdo->prepare("
+        INSERT INTO facture_details (
+            facture_id, materiel_id, quantite, 
+            prix_unitaire, montant
+        ) VALUES (?, ?, ?, ?, ?)
+    ");
+    foreach ($details as $detail) {
+        $stmt->execute([
+            $facture_id,
+            $detail['materiel_id'],
+            $detail['quantite'],
+            $detail['prix_unitaire'],
+            $detail['montant']
+        ]);
+    }
+
+    // Validation de la transaction
+    $pdo->commit();
+
+    // Réponse succès
+    sendJsonResponse(true, "✅ Facture N° $numero_facture enregistrée avec succès !", [
+        'numero_facture' => $numero_facture,
+        'montant_total' => $montant_total
+    ]);
+
+} catch (Exception $e) {
+    // Annulation de la transaction en cas d'erreur
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    // Suppression du fichier uploadé en cas d'erreur
+    if (isset($fichier_chemin) && file_exists($fichier_chemin)) {
+        unlink($fichier_chemin);
+    }
+
+    // Réponse erreur
+    sendJsonResponse(false, "❌ Erreur : " . $e->getMessage());
+}

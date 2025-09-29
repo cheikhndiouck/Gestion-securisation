@@ -14,7 +14,7 @@
 
 /* Effet hover */
 .dropdown-item:hover {
-  background-color: #ee7300;
+  background-color:  rgb(0, 56, 140);
   color: #e6e2e2;
   transform: translateX(4px); /* petit effet décalage */
 }
