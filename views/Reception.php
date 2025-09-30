@@ -182,6 +182,10 @@ require_once '../php/lst_materiel.php'; // Pour accéder à la liste des matéri
 
         <h3 class="mb-3">📋 Dernières Réceptions</h3>
         <div class="table-responsive">
+          <div class="mb-3 text-end">
+            <a href="../php/export_reception.php" class="btn btn-outline-success"> 📥 Exporter en Excel </a>
+          </div>
+
           <table class="table table-bordered table-striped">
             <thead class="table-dark">
               <tr>

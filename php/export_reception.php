@@ -1,37 +1,38 @@
 <?php
-try {
-    // Connexion à la base de données
-    $pdo = new PDO("mysql:host=localhost;dbname=gestion-database;charset=utf8", "root", "");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+require_once './BD connexion/connexion.php';
 
-    // Requête principale
-    $stmt = $pdo->query("
-        SELECT f.numero_fiche, f.gie, f.date_reception, f.zone, m.id_materiel, m.qte_constatee
-        FROM fiche_reception f
-        JOIN materiels_reception m ON f.id = m.id_reception
-        ORDER BY f.date_reception DESC
-    ");
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename=receptions.csv');
 
-    // Préparation des en-têtes HTTP pour le téléchargement CSV
-    header("Content-Type: text/csv; charset=utf-8");
-    header("Content-Disposition: attachment; filename=rapport_fiches-reception.csv");
+$output = fopen('php://output', 'w');
 
-    // Ouverture du flux de sortie
-    $output = fopen("php://output", "w");
+// En-têtes du fichier
+fputcsv($output, ['Numéro de Fiche', 'Matériel', 'Quantité', 'Unité', 'Numéros de Compteurs']);
 
-    // En-têtes de colonnes
-    fputcsv($output, ["Numéro fiche", "GIE", "Date réception", "Zone", "ID Matériel", "Quantité constatée"]);
+// Requête
+$sql = "
+    SELECT fr.numero_fiche, 
+           m.nom AS materiel, 
+           mr.qte_constatee, 
+           m.unite,
+           GROUP_CONCAT(rc.numero_compteur SEPARATOR ', ') AS compteurs
+    FROM fiche_reception fr
+    LEFT JOIN materiels_reception mr 
+        ON fr.id = mr.fiche_reception_id
+    LEFT JOIN materiel m 
+        ON mr.materiel_id = m.id
+    LEFT JOIN receptions_compteurs rc
+        ON fr.id = rc.fiche_reception_id
+    GROUP BY fr.id, m.nom, mr.qte_constatee, m.unite
+    ORDER BY fr.id DESC
+";
+$stmt = $pdo->query($sql);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Remplissage du fichier CSV
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        fputcsv($output, $row);
-    }
-
-    fclose($output);
-    exit;
-
-} catch (PDOException $e) {
-    echo "Erreur de connexion ou d'exécution SQL : " . $e->getMessage();
-    exit;
+// Écriture des données
+foreach ($rows as $row) {
+    fputcsv($output, $row);
 }
-?>
+
+fclose($output);
+exit;
