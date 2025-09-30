@@ -145,6 +145,14 @@ require_once '../php/lst_materiel.php'; // Pour accéder à la liste des matéri
             </button>
           </div>
 
+          <?php
+          if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gie'])) {
+            $gie = htmlspecialchars($_POST['gie']);
+            echo "<h3 class='text-center my-3'>Rapport du GIE : <span class='text-primary'>$gie</span></h3>";
+          }
+          ?>
+
+
         </form>
 
         <?php
